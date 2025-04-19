@@ -289,6 +289,12 @@ local library = loadstring(game:HttpGet("https://raw.githubusercontent.com/drill
     gamename = "ESP Script",
 })
 
+-- Function to copy text to clipboard
+local function copyToClipboard(text)
+    setclipboard(text)
+    library:SendNotification("Link copied!", 3)
+end
+
 library:init()
 
 local Window = library.NewWindow({
@@ -297,6 +303,7 @@ local Window = library.NewWindow({
 })
 
 local MainTab = Window:AddTab("  Visuals  ")
+local CreditsTab = Window:AddTab("  Credits  ") -- Added Credits Tab
 local SettingsTab = library:CreateSettingsTab(Window)
 
 local MainSection = MainTab:AddSection("ESP Controls", 1)
@@ -456,6 +463,24 @@ HighlightSection:AddSlider({
     value = 0.5,
     callback = function(value)
         espSettings.OutlineTransparency = value
+    end
+})
+
+local CreditsSection = CreditsTab:AddSection("Credits & Links", 1)
+
+CreditsSection:AddButton({
+    text = "guns.lol/pxul",
+    tooltip = "Click to copy website link",
+    callback = function()
+        copyToClipboard("https://guns.lol/pxul")
+    end
+})
+
+CreditsSection:AddButton({
+    text = "GitHub Source",
+    tooltip = "Click to copy GitHub repository link",
+    callback = function()
+        copyToClipboard("https://github.com/0pxul/GPT-hook")
     end
 })
 
