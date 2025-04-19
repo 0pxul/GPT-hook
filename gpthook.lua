@@ -2,6 +2,7 @@ local Decimals = 4
 local Clock = os.clock()
 
 local leavesChildAddedConnection = nil
+local maleChildAddedConnection = nil
 
 
 local RunService = game:GetService("RunService")
@@ -108,6 +109,85 @@ local function createESPBox(model)
     espBox.Model = model
     espBox.Highlight = highlight
     return espBox
+end
+
+local function processMaleChildren(model)
+    if model:IsA("Model") and model.Name == "Male" then
+        if not originalObjects.maleChildren[model] then
+            originalObjects.maleChildren[model] = {}
+        end
+
+        -- Target specific models in Male: Default, DefaultHigh, and FlatTop
+        local targetModels = {"Default", "DefaultHigh", "FlatTop"}
+
+        for _, childName in ipairs(targetModels) do
+            -- Check for Model child
+            local childModel = model:FindFirstChild(childName)
+            if childModel and childModel:IsA("Model") then
+                for _, part in pairs(childModel:GetDescendants()) do
+                    if part:IsA("BasePart") or part:IsA("MeshPart") then
+                        -- Only process if not already processed
+                        local already = false
+                        for _, info in ipairs(originalObjects.maleChildren[model]) do
+                            if info.Instance == part then
+                                already = true
+                                break
+                            end
+                        end
+                        if not already then
+                            table.insert(originalObjects.maleChildren[model], {
+                                Instance = part,
+                                OriginalTransparency = part.Transparency
+                            })
+                            part.Transparency = 1
+                        end
+                    end
+                end
+            end
+            -- Check for MeshPart or BasePart directly under Male
+            local meshPart = model:FindFirstChild(childName)
+            if meshPart and (meshPart:IsA("MeshPart") or meshPart:IsA("BasePart")) then
+                local already = false
+                for _, info in ipairs(originalObjects.maleChildren[model]) do
+                    if info.Instance == meshPart then
+                        already = true
+                        break
+                    end
+                end
+                if not already then
+                    table.insert(originalObjects.maleChildren[model], {
+                        Instance = meshPart,
+                        OriginalTransparency = meshPart.Transparency
+                    })
+                    meshPart.Transparency = 1
+                end
+            end
+        end
+
+        -- Also check other child models
+        for _, child in pairs(model:GetChildren()) do
+            if child:IsA("Model") and not table.find(targetModels, child.Name) then
+                for _, part in pairs(child:GetDescendants()) do
+                    if part:IsA("BasePart") or part:IsA("MeshPart") then
+                        local already = false
+                        for _, info in ipairs(originalObjects.maleChildren[model]) do
+                            if info.Instance == part then
+                                already = true
+                                break
+                            end
+                        end
+                        if not already then
+                            table.insert(originalObjects.maleChildren[model], {
+                                Instance = part,
+                                OriginalTransparency = part.Transparency
+                            })
+                            part.Transparency = 1
+                        end
+                    end
+                end
+            end
+        end
+    end
 end
 
 
@@ -410,6 +490,12 @@ end
 local function toggleMaleChildrenTransparency(state)
     removalSettings.MaleChildrenTransparent = state
 
+    -- Disconnect previous event if any
+    if maleChildAddedConnection then
+        maleChildAddedConnection:Disconnect()
+        maleChildAddedConnection = nil
+    end
+
     -- Reset transparency if turning off
     if not state then
         for model, children in pairs(originalObjects.maleChildren) do
@@ -425,55 +511,21 @@ local function toggleMaleChildrenTransparency(state)
         return
     end
 
-    -- Make children transparent if turning on
+    -- Make children transparent for all current Male models
     for _, object in pairs(Workspace:GetChildren()) do
         if object:IsA("Model") and object.Name == "Male" then
-            originalObjects.maleChildren[object] = {}
-
-            -- Target specific models in Male: Default, DefaultHigh, and FlatTop
-            local targetModels = {"Default", "DefaultHigh", "FlatTop"}
-
-            for _, childName in ipairs(targetModels) do
-                -- Check for Model child
-                local childModel = object:FindFirstChild(childName)
-                if childModel and childModel:IsA("Model") then
-                    for _, part in pairs(childModel:GetDescendants()) do
-                        if part:IsA("BasePart") or part:IsA("MeshPart") then
-                            table.insert(originalObjects.maleChildren[object], {
-                                Instance = part,
-                                OriginalTransparency = part.Transparency
-                            })
-                            part.Transparency = 1
-                        end
-                    end
-                end
-                -- Check for MeshPart or BasePart directly under Male
-                local meshPart = object:FindFirstChild(childName)
-                if meshPart and (meshPart:IsA("MeshPart") or meshPart:IsA("BasePart")) then
-                    table.insert(originalObjects.maleChildren[object], {
-                        Instance = meshPart,
-                        OriginalTransparency = meshPart.Transparency
-                    })
-                    meshPart.Transparency = 1
-                end
-            end
-
-            -- Also check other child models
-            for _, child in pairs(object:GetChildren()) do
-                if child:IsA("Model") and not table.find(targetModels, child.Name) then
-                    for _, part in pairs(child:GetDescendants()) do
-                        if part:IsA("BasePart") or part:IsA("MeshPart") then
-                            table.insert(originalObjects.maleChildren[object], {
-                                Instance = part,
-                                OriginalTransparency = part.Transparency
-                            })
-                            part.Transparency = 1
-                        end
-                    end
-                end
-            end
+            processMaleChildren(object)
         end
     end
+
+    -- Listen for new Male models being added
+    maleChildAddedConnection = Workspace.ChildAdded:Connect(function(child)
+        if removalSettings.MaleChildrenTransparent then
+            if child:IsA("Model") and child.Name == "Male" then
+                processMaleChildren(child)
+            end
+        end
+    end)
 end
 
 
