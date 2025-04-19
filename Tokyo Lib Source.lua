@@ -98,12 +98,12 @@ library.themes = {
     {
         name = 'OneTap',
         theme = {
-            ['Accent']                    = fromrgb(254, 135, 1);
+            ['Accent']                    = fromrgb(254, 161, 1);
             ['Background']                = fromrgb(17, 17, 17);
             ['Border']                    = fromrgb(24, 24, 24);
             ['Border 1']                  = fromrgb(1, 1, 1);
             ['Border 2']                  = fromrgb(17, 17, 17);
-            ['Border 3']                  = fromrgb(21, 21, 21);
+            ['Border 3']                  = fromrgb(57, 57, 57);
             ['Primary Text']              = fromrgb(235, 234, 234);
             ['Group Background']          = fromrgb(17, 17, 17);
             ['Selected Tab Background']   = fromrgb(17, 17, 17);
@@ -111,15 +111,15 @@ library.themes = {
             ['Selected Tab Text']         = fromrgb(245, 244, 244);
             ['Unselected Tab Text']       = fromrgb(254, 253, 253);
             ['Section Background']        = fromrgb(17, 17, 17);
-            ['Option Text 1']             = fromrgb(255, 253, 253);
-            ['Option Text 2']             = fromrgb(254, 214, 169);
-            ['Option Text 3']             = fromrgb(123, 123, 122);
+            ['Option Text 1']             = fromrgb(254, 253, 253);
+            ['Option Text 2']             = fromrgb(187, 186, 186);
+            ['Option Text 3']             = fromrgb(200, 199, 199);
             ['Option Border 1']           = fromrgb(12, 12, 12);
             ['Option Border 2']           = fromrgb(1, 1, 1);
-            ['Option Background']         = fromrgb(18, 18, 18);
+            ['Option Background']         = fromrgb(38, 38, 38);
             ["Risky Text"]                = fromrgb(175, 21, 21);
-            ["Risky Text Enabled"]        = fromrgb(255, 41, 41);
-        }        
+            ["Risky Text Enabled"]        = fromrgb(254, 41, 41);
+        }
     },
     {
         name = 'Midnight',
