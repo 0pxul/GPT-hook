@@ -681,7 +681,7 @@ RunService:BindToRenderStep("MaleESP", Enum.RenderPriority.Camera.Value, updateE
 espRunning = true
 
 local library = loadstring(game:HttpGet("https://raw.githubusercontent.com/0pxul/GPT-hook/refs/heads/main/Tokyo%20Lib%20Source.lua"))({
-    cheatname = "OneTap V1",
+    cheatname = "GPTHOOK v2",
     gamename = "BHRM 5 ",
 })
 
@@ -693,7 +693,7 @@ end
 library:init()
 
 local Window = library.NewWindow({
-    title = "OneTap V1",
+    title = "GPTHOOK v2",
     size = UDim2.new(0, 510, 0.6, 6)
 })
 
