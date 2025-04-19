@@ -4598,10 +4598,11 @@ function library:init()
             text = {
                 {self.cheatname, true},
                 {"Private", false},
+                {self.gamename, false},
                 {'0 fps', true},
                 {'0ms', true},
-                {'00:00:00', true},
-                {'M, D, Y', true},
+                {'00:00:00', false},
+                {'M, D, Y', false},
             };
             lock = 'custom';
             position = newUDim2(0,0,0,0);
