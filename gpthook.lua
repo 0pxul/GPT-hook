@@ -286,10 +286,9 @@ espRunning = true
 
 local library = loadstring(game:HttpGet("https://raw.githubusercontent.com/drillygzzly/Roblox-UI-Libs/main/1%20Tokyo%20Lib%20(FIXED)/Tokyo%20Lib%20Source.lua"))({
     cheatname = "GPT-Hook",
-    gamename = "ESP Script",
+    gamename = "BHRM 5",
 })
 
--- Function to copy text to clipboard
 local function copyToClipboard(text)
     setclipboard(text)
     library:SendNotification("Link copied!", 3)
@@ -298,7 +297,7 @@ end
 library:init()
 
 local Window = library.NewWindow({
-    title = "GPT-Hook | PUBLIC",
+    title = "GPT-Hook 1.2",
     size = UDim2.new(0, 510, 0.6, 6)
 })
 
