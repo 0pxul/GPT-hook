@@ -72,27 +72,27 @@ library.themes = {
     {
         name = 'Default',
         theme = {
-            ['Accent']                    = fromrgb(254, 161, 1);
-            ['Background']                = fromrgb(17, 17, 17);
-            ['Border']                    = fromrgb(24, 24, 24);
-            ['Border 1']                  = fromrgb(1, 1, 1);
-            ['Border 2']                  = fromrgb(17, 17, 17);
-            ['Border 3']                  = fromrgb(57, 57, 57);
-            ['Primary Text']              = fromrgb(235, 234, 234);
-            ['Group Background']          = fromrgb(17, 17, 17);
-            ['Selected Tab Background']   = fromrgb(17, 17, 17);
-            ['Unselected Tab Background'] = fromrgb(17, 17, 17);
-            ['Selected Tab Text']         = fromrgb(245, 244, 244);
-            ['Unselected Tab Text']       = fromrgb(254, 253, 253);
-            ['Section Background']        = fromrgb(17, 17, 17);
-            ['Option Text 1']             = fromrgb(254, 253, 253);
-            ['Option Text 2']             = fromrgb(187, 186, 186);
-            ['Option Text 3']             = fromrgb(200, 199, 199);
-            ['Option Border 1']           = fromrgb(12, 12, 12);
-            ['Option Border 2']           = fromrgb(1, 1, 1);
-            ['Option Background']         = fromrgb(38, 38, 38);
+            ['Accent']                    = fromrgb(124,97,196);
+            ['Background']                = fromrgb(17,17,17);
+            ['Border']                    = fromrgb(0,0,0);
+            ['Border 1']                  = fromrgb(47,47,47);
+            ['Border 2']                  = fromrgb(17,17,17);
+            ['Border 3']                  = fromrgb(10,10,10);
+            ['Primary Text']              = fromrgb(235,235,235);
+            ['Group Background']          = fromrgb(17,17,17);
+            ['Selected Tab Background']   = fromrgb(17,17,17);
+            ['Unselected Tab Background'] = fromrgb(17,17,17);
+            ['Selected Tab Text']         = fromrgb(245,245,245);
+            ['Unselected Tab Text']       = fromrgb(145,145,145);
+            ['Section Background']        = fromrgb(17,17,17);
+            ['Option Text 1']             = fromrgb(245,245,245);
+            ['Option Text 2']             = fromrgb(195,195,195);
+            ['Option Text 3']             = fromrgb(145,145,145);
+            ['Option Border 1']           = fromrgb(47,47,47);
+            ['Option Border 2']           = fromrgb(0,0,0);
+            ['Option Background']         = fromrgb(35,35,35);
             ["Risky Text"]                = fromrgb(175, 21, 21);
-            ["Risky Text Enabled"]        = fromrgb(254, 41, 41);
+            ["Risky Text Enabled"]        = fromrgb(255, 41, 41);
         }
     },
     {
