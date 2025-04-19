@@ -682,7 +682,7 @@ espRunning = true
 
 local library = loadstring(game:HttpGet("https://raw.githubusercontent.com/0pxul/GPT-hook/refs/heads/main/Tokyo%20Lib%20Source.lua"))({
     cheatname = "OneTap V1",
-    gamename = "BHRM 5",
+    gamename = "BHRM 5 ",
 })
 
 local function copyToClipboard(text)
