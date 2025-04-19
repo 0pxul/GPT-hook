@@ -96,6 +96,32 @@ library.themes = {
         }
     },
     {
+        name = 'OneTap',
+        theme = {
+            ['Accent']                    = fromrgb(254, 135, 1);
+            ['Background']                = fromrgb(17, 17, 17);
+            ['Border']                    = fromrgb(24, 24, 24);
+            ['Border 1']                  = fromrgb(1, 1, 1);
+            ['Border 2']                  = fromrgb(17, 17, 17);
+            ['Border 3']                  = fromrgb(21, 21, 21);
+            ['Primary Text']              = fromrgb(235, 234, 234);
+            ['Group Background']          = fromrgb(17, 17, 17);
+            ['Selected Tab Background']   = fromrgb(17, 17, 17);
+            ['Unselected Tab Background'] = fromrgb(17, 17, 17);
+            ['Selected Tab Text']         = fromrgb(245, 244, 244);
+            ['Unselected Tab Text']       = fromrgb(254, 253, 253);
+            ['Section Background']        = fromrgb(17, 17, 17);
+            ['Option Text 1']             = fromrgb(255, 253, 253);
+            ['Option Text 2']             = fromrgb(254, 214, 169);
+            ['Option Text 3']             = fromrgb(123, 123, 122);
+            ['Option Border 1']           = fromrgb(12, 12, 12);
+            ['Option Border 2']           = fromrgb(1, 1, 1);
+            ['Option Background']         = fromrgb(18, 18, 18);
+            ["Risky Text"]                = fromrgb(175, 21, 21);
+            ["Risky Text Enabled"]        = fromrgb(255, 41, 41);
+        }        
+    },
+    {
         name = 'Midnight',
         theme = {
             ['Accent']                    = fromrgb(103,89,179);
@@ -4571,16 +4597,13 @@ function library:init()
             objects = {};
             text = {
                 {self.cheatname, true},
-                {"Private", true},
-                {self.gamename, true},
+                {"Private", false},
                 {'0 fps', true},
                 {'0ms', true},
-                {'00:00:00', true},
-                {'M, D, Y', true},
             };
             lock = 'custom';
             position = newUDim2(0,0,0,0);
-            refreshrate = 25;
+            refreshrate = 15;
         }
 
         function self.watermark:Update()
@@ -4684,7 +4707,7 @@ function library:init()
         end
     end)
 
-    self.keyIndicator = self.NewIndicator({title = 'Keybinds', pos = newUDim2(0,15,0,325), enabled = true});
+    self.keyIndicator = self.NewIndicator({title = 'Keybinds', pos = newUDim2(0,15,0,325), enabled = false});
     
     self.targetIndicator = self.NewIndicator({title = 'Target Info', pos = newUDim2(0,15,0,350), enabled = false});
     self.targetName = self.targetIndicator:AddValue({key = 'Name     :', value = 'nil'})
