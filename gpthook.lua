@@ -1,6 +1,9 @@
 local Decimals = 4
 local Clock = os.clock()
 
+local leavesChildAddedConnection = nil
+
+
 local RunService = game:GetService("RunService")
 local Workspace = game:GetService("Workspace")
 local Players = game:GetService("Players")
@@ -21,6 +24,16 @@ local espSettings = {
     MinimumDistance = 5,
     BoxStyle = "Full",
     CornerSize = 5
+}
+
+
+local headHighlightSettings = {
+    Enabled = false,
+    FillColor = Color3.fromRGB(255, 255, 0),
+    OutlineColor = Color3.fromRGB(0, 0, 0),
+    FillTransparency = 0.5,
+    OutlineTransparency = 0.2,
+    DepthMode = Enum.HighlightDepthMode.Occluded
 }
 
 -- Add settings for removals
@@ -96,6 +109,116 @@ local function createESPBox(model)
     espBox.Highlight = highlight
     return espBox
 end
+
+
+local function processLeavesInParent(leavesParent)
+    for _, model in ipairs(leavesParent:GetChildren()) do
+        if model:IsA("Model") then
+            local leavesPart = model:FindFirstChild("Leaves")
+            if leavesPart and leavesPart:IsA("MeshPart") then
+                -- Only process if not already processed
+                local already = false
+                for _, info in ipairs(originalObjects.leaves) do
+                    if info.Instance == leavesPart then
+                        already = true
+                        break
+                    end
+                end
+                if not already then
+                    table.insert(originalObjects.leaves, {
+                        Instance = leavesPart,
+                        OriginalTransparency = leavesPart.Transparency
+                    })
+                    leavesPart.Transparency = 1
+                end
+            end
+        end
+    end
+end
+
+local function onNewTree(model)
+    if model:IsA("Model") then
+        local leavesPart = model:FindFirstChild("Leaves")
+        if leavesPart and leavesPart:IsA("MeshPart") then
+            -- Only process if not already processed
+            local already = false
+            for _, info in ipairs(originalObjects.leaves) do
+                if info.Instance == leavesPart then
+                    already = true
+                    break
+                end
+            end
+            if not already then
+                table.insert(originalObjects.leaves, {
+                    Instance = leavesPart,
+                    OriginalTransparency = leavesPart.Transparency
+                })
+                leavesPart.Transparency = 1
+            end
+        end
+    end
+end
+
+local headHighlights = {}
+
+local function updateHeadHighlights()
+    -- Remove highlights for missing heads
+    for i = #headHighlights, 1, -1 do
+        local info = headHighlights[i]
+        if not info.Head or not info.Head.Parent or not headHighlightSettings.Enabled then
+            if info.Highlight then
+                info.Highlight:Destroy()
+            end
+            table.remove(headHighlights, i)
+        end
+    end
+
+    if not headHighlightSettings.Enabled then return end
+
+    -- Add highlights to new heads
+    for _, model in ipairs(Workspace:GetChildren()) do
+        if model:IsA("Model") and model.Name == "Male" then
+            local head = model:FindFirstChild("Head")
+            if head and head:IsA("MeshPart") then
+                local already = false
+                for _, info in ipairs(headHighlights) do
+                    if info.Head == head then
+                        already = true
+                        break
+                    end
+                end
+                if not already then
+                    local highlight = Instance.new("Highlight")
+                    highlight.Adornee = head
+                    highlight.FillColor = headHighlightSettings.FillColor
+                    highlight.OutlineColor = headHighlightSettings.OutlineColor
+                    highlight.FillTransparency = headHighlightSettings.FillTransparency
+                    highlight.OutlineTransparency = headHighlightSettings.OutlineTransparency
+                    highlight.DepthMode = headHighlightSettings.DepthMode
+                    highlight.Parent = head
+                    highlight.Enabled = true
+                    table.insert(headHighlights, {Head = head, Highlight = highlight})
+                end
+            end
+        end
+    end
+
+    -- Update highlight settings
+    for _, info in ipairs(headHighlights) do
+        if info.Highlight then
+            info.Highlight.FillColor = headHighlightSettings.FillColor
+            info.Highlight.OutlineColor = headHighlightSettings.OutlineColor
+            info.Highlight.FillTransparency = headHighlightSettings.FillTransparency
+            info.Highlight.OutlineTransparency = headHighlightSettings.OutlineTransparency
+            info.Highlight.DepthMode = headHighlightSettings.DepthMode
+            info.Highlight.Enabled = headHighlightSettings.Enabled
+        end
+    end
+end
+
+RunService:BindToRenderStep("HeadHighlight", Enum.RenderPriority.Camera.Value + 1, updateHeadHighlights)
+
+
 
 local function updateESPBox(espBox)
     local model = espBox.Model
@@ -357,7 +480,13 @@ end
 local function toggleLeaves(state)
     removalSettings.RemoveLeaves = state
 
-    -- Reset transparency if turning off
+    -- Disconnect previous event if any
+    if leavesChildAddedConnection then
+        leavesChildAddedConnection:Disconnect()
+        leavesChildAddedConnection = nil
+    end
+
+    -- Restore all leaves if turning off
     if not state then
         for _, leafInfo in pairs(originalObjects.leaves) do
             if leafInfo.Instance and leafInfo.Instance:IsA("BasePart") then
@@ -373,18 +502,10 @@ local function toggleLeaves(state)
 
     local leavesParent = Workspace:GetChildren()[9]
     if leavesParent and (leavesParent:IsA("Folder") or leavesParent:IsA("Model")) then
-        for _, model in ipairs(leavesParent:GetChildren()) do
-            if model:IsA("Model") then
-                local leavesPart = model:FindFirstChild("Leaves")
-                if leavesPart and leavesPart:IsA("MeshPart") then
-                    table.insert(originalObjects.leaves, {
-                        Instance = leavesPart,
-                        OriginalTransparency = leavesPart.Transparency
-                    })
-                    leavesPart.Transparency = 1
-                end
-            end
-        end
+        -- Process all current leaves
+        processLeavesInParent(leavesParent)
+        -- Listen for new trees
+        leavesChildAddedConnection = leavesParent.ChildAdded:Connect(onNewTree)
     end
 end
 
@@ -518,7 +639,7 @@ end
 library:init()
 
 local Window = library.NewWindow({
-    title = "GPT-Hook 1.2",
+    title = "GPT-Hook 1.4",
     size = UDim2.new(0, 510, 0.6, 6)
 })
 
@@ -685,6 +806,74 @@ HighlightSection:AddSlider({
         espSettings.OutlineTransparency = value
     end
 })
+
+HighlightSection:AddToggle({
+    text = "Highlight Head",
+    state = false,
+    tooltip = "Highlight the Head MeshPart in Male models",
+    flag = "Highlight_Head",
+    callback = function(state)
+        headHighlightSettings.Enabled = state
+    end
+})
+
+HighlightSection:AddColor({
+    text = "Head Fill Color",
+    color = headHighlightSettings.FillColor,
+    flag = "HeadHighlight_FillColor",
+    callback = function(color)
+        headHighlightSettings.FillColor = color
+    end
+})
+
+HighlightSection:AddColor({
+    text = "Head Outline Color",
+    color = headHighlightSettings.OutlineColor,
+    flag = "HeadHighlight_OutlineColor",
+    callback = function(color)
+        headHighlightSettings.OutlineColor = color
+    end
+})
+
+HighlightSection:AddSlider({
+    text = "Head Fill Transparency",
+    flag = "HeadHighlight_FillTransparency",
+    min = 0,
+    max = 1,
+    increment = 0.05,
+    value = headHighlightSettings.FillTransparency,
+    callback = function(value)
+        headHighlightSettings.FillTransparency = value
+    end
+})
+
+HighlightSection:AddSlider({
+    text = "Head Outline Transparency",
+    flag = "HeadHighlight_OutlineTransparency",
+    min = 0,
+    max = 1,
+    increment = 0.05,
+    value = headHighlightSettings.OutlineTransparency,
+    callback = function(value)
+        headHighlightSettings.OutlineTransparency = value
+    end
+})
+
+HighlightSection:AddList({
+    text = "Head Highlight Depth Mode",
+    tooltip = "Change how head highlights appear through walls",
+    values = {"AlwaysOnTop", "Occluded"},
+    selected = "Occluded",
+    flag = "HeadHighlight_DepthMode",
+    callback = function(value)
+        if value == "AlwaysOnTop" then
+            headHighlightSettings.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
+        else
+            headHighlightSettings.DepthMode = Enum.HighlightDepthMode.Occluded
+        end
+    end
+})
+
 
 -- Updated Removals section with requested features
 local RemovalsSection = MainTab:AddSection("Removals", 2)
