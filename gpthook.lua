@@ -5,6 +5,7 @@ local RunService = game:GetService("RunService")
 local Workspace = game:GetService("Workspace")
 local Players = game:GetService("Players")
 local Camera = Workspace.CurrentCamera
+local Terrain = Workspace:FindFirstChildOfClass("Terrain")
 
 local espSettings = {
     BoxEnabled = false,
@@ -21,6 +22,32 @@ local espSettings = {
     BoxStyle = "Full",
     CornerSize = 5
 }
+
+-- Add settings for removals
+local removalSettings = {
+    MaleChildrenTransparent = false,
+    LessShadows = false,
+    RemoveClouds = false,
+    RemoveLeaves = false
+}
+
+-- Store original state references
+local originalObjects = {
+    maleChildren = {},
+    leaves = {}
+}
+
+-- Store original terrain states
+local originalTerrainSettings = {
+    shadowsEnabled = nil,
+    terrainClouds = {}
+}
+
+-- Store original lighting children
+local originalLightingChildren = {}
+
+-- Keep track of removed cloud instances
+local removedClouds = {}
 
 local espRunning = false
 local espBoxes = {}
@@ -256,6 +283,193 @@ local function updateESP()
     end
 end
 
+-- Functions for removals
+local function toggleMaleChildrenTransparency(state)
+    removalSettings.MaleChildrenTransparent = state
+
+    -- Reset transparency if turning off
+    if not state then
+        for model, children in pairs(originalObjects.maleChildren) do
+            if model and model:IsA("Model") then
+                for _, child in pairs(children) do
+                    if child.Instance and (child.Instance:IsA("BasePart") or child.Instance:IsA("MeshPart")) then
+                        child.Instance.Transparency = child.OriginalTransparency
+                    end
+                end
+            end
+        end
+        originalObjects.maleChildren = {}
+        return
+    end
+
+    -- Make children transparent if turning on
+    for _, object in pairs(Workspace:GetChildren()) do
+        if object:IsA("Model") and object.Name == "Male" then
+            originalObjects.maleChildren[object] = {}
+
+            -- Target specific models in Male: Default, DefaultHigh, and FlatTop
+            local targetModels = {"Default", "DefaultHigh", "FlatTop"}
+
+            for _, childName in ipairs(targetModels) do
+                -- Check for Model child
+                local childModel = object:FindFirstChild(childName)
+                if childModel and childModel:IsA("Model") then
+                    for _, part in pairs(childModel:GetDescendants()) do
+                        if part:IsA("BasePart") or part:IsA("MeshPart") then
+                            table.insert(originalObjects.maleChildren[object], {
+                                Instance = part,
+                                OriginalTransparency = part.Transparency
+                            })
+                            part.Transparency = 1
+                        end
+                    end
+                end
+                -- Check for MeshPart or BasePart directly under Male
+                local meshPart = object:FindFirstChild(childName)
+                if meshPart and (meshPart:IsA("MeshPart") or meshPart:IsA("BasePart")) then
+                    table.insert(originalObjects.maleChildren[object], {
+                        Instance = meshPart,
+                        OriginalTransparency = meshPart.Transparency
+                    })
+                    meshPart.Transparency = 1
+                end
+            end
+
+            -- Also check other child models
+            for _, child in pairs(object:GetChildren()) do
+                if child:IsA("Model") and not table.find(targetModels, child.Name) then
+                    for _, part in pairs(child:GetDescendants()) do
+                        if part:IsA("BasePart") or part:IsA("MeshPart") then
+                            table.insert(originalObjects.maleChildren[object], {
+                                Instance = part,
+                                OriginalTransparency = part.Transparency
+                            })
+                            part.Transparency = 1
+                        end
+                    end
+                end
+            end
+        end
+    end
+end
+
+
+local function toggleLeaves(state)
+    removalSettings.RemoveLeaves = state
+
+    -- Reset transparency if turning off
+    if not state then
+        for _, leafInfo in pairs(originalObjects.leaves) do
+            if leafInfo.Instance and leafInfo.Instance:IsA("BasePart") then
+                leafInfo.Instance.Transparency = leafInfo.OriginalTransparency
+            end
+        end
+        originalObjects.leaves = {}
+        return
+    end
+
+    -- Only process MeshParts named "Leaves" inside models in workspace:GetChildren()[9]
+    originalObjects.leaves = {}
+
+    local leavesParent = Workspace:GetChildren()[9]
+    if leavesParent and (leavesParent:IsA("Folder") or leavesParent:IsA("Model")) then
+        for _, model in ipairs(leavesParent:GetChildren()) do
+            if model:IsA("Model") then
+                local leavesPart = model:FindFirstChild("Leaves")
+                if leavesPart and leavesPart:IsA("MeshPart") then
+                    table.insert(originalObjects.leaves, {
+                        Instance = leavesPart,
+                        OriginalTransparency = leavesPart.Transparency
+                    })
+                    leavesPart.Transparency = 1
+                end
+            end
+        end
+    end
+end
+
+
+
+local function toggleLessShadows(state)
+    removalSettings.LessShadows = state
+    
+    -- Handle shadows via lighting service
+    local Lighting = game:GetService("Lighting")
+    
+    -- Store original shadow settings if we haven't already
+    if originalTerrainSettings.shadowsEnabled == nil then
+        originalTerrainSettings.shadowsEnabled = Lighting.GlobalShadows
+    end
+    
+    if state then
+        -- Disable global shadows
+        Lighting.GlobalShadows = false
+        
+        -- Set time to noon to minimize shadows
+        pcall(function()
+            Lighting.ClockTime = 12
+        end)
+    else
+        -- Restore original settings
+        Lighting.GlobalShadows = originalTerrainSettings.shadowsEnabled
+    end
+end
+
+local function toggleClouds(state)
+    removalSettings.RemoveClouds = state
+
+    -- Remove/restore Terrain Clouds using the Clouds instance
+    if Terrain then
+        local clouds = Terrain:FindFirstChildOfClass("Clouds")
+        if clouds then
+            if state then
+                -- Store original state
+                originalTerrainSettings.cloudsEnabled = clouds.Enabled
+                clouds.Enabled = false
+            else
+                if originalTerrainSettings.cloudsEnabled ~= nil then
+                    clouds.Enabled = originalTerrainSettings.cloudsEnabled
+                else
+                    clouds.Enabled = true
+                end
+            end
+        end
+    end
+end
+
+local lightingRemoved = false
+
+local function toggleAllLighting(state)
+    local Lighting = game:GetService("Lighting")
+    if state then
+        -- Remove all lighting
+        originalLightingChildren = {}
+        for _, child in pairs(Lighting:GetChildren()) do
+            if child:IsA("Sky") or child:IsA("Atmosphere") or child:IsA("BloomEffect") or 
+               child:IsA("BlurEffect") or child:IsA("ColorCorrectionEffect") or
+               child:IsA("DepthOfFieldEffect") or child:IsA("SunRaysEffect") then
+                table.insert(originalLightingChildren, {
+                    Instance = child,
+                    Parent = Lighting
+                })
+                child.Parent = nil
+            end
+        end
+        library:SendNotification("Removed " .. #originalLightingChildren .. " lighting effects", 3)
+        lightingRemoved = true
+    else
+        -- Restore all lighting
+        for _, childInfo in pairs(originalLightingChildren) do
+            if childInfo.Instance then
+                childInfo.Instance.Parent = childInfo.Parent
+            end
+        end
+        originalLightingChildren = {}
+        library:SendNotification("Restored lighting effects", 3)
+        lightingRemoved = false
+    end
+end
+
 local function cleanupESP()
     if espRunning then
         RunService:UnbindFromRenderStep("MaleESP")
@@ -279,6 +493,13 @@ local function cleanupESP()
     end
     
     espBoxes = {}
+    
+    -- Restore any removed objects
+    toggleMaleChildrenTransparency(false)
+    toggleLessShadows(false)
+    toggleClouds(false)
+    toggleLeaves(false)
+    restoreAllLighting()
 end
 
 RunService:BindToRenderStep("MaleESP", Enum.RenderPriority.Camera.Value, updateESP)
@@ -302,7 +523,7 @@ local Window = library.NewWindow({
 })
 
 local MainTab = Window:AddTab("  Visuals  ")
-local CreditsTab = Window:AddTab("  Credits  ") -- Added Credits Tab
+local CreditsTab = Window:AddTab("  Credits  ")
 local SettingsTab = library:CreateSettingsTab(Window)
 
 local MainSection = MainTab:AddSection("ESP Controls", 1)
@@ -361,7 +582,7 @@ MainSection:AddSlider({
     min = 1,
     max = 20,
     increment = 1,
-    value = 2,
+    value = 1,
     callback = function(value)
         espSettings.BoxThickness = value
     end
@@ -373,7 +594,7 @@ MainSection:AddSlider({
     min = 0,
     max = 1,
     increment = 0.05,
-    value = 0.2,
+    value = 1,
     callback = function(value)
         espSettings.BoxTransparency = value
     end
@@ -462,6 +683,59 @@ HighlightSection:AddSlider({
     value = 0.5,
     callback = function(value)
         espSettings.OutlineTransparency = value
+    end
+})
+
+-- Updated Removals section with requested features
+local RemovalsSection = MainTab:AddSection("Removals", 2)
+
+RemovalsSection:AddToggle({
+    text = "Character Addons",
+    state = false,
+    tooltip = "Make Default, DefaultHigh, FlatTop and other Male models transparent",
+    flag = "Transparent_MaleChildren",
+    callback = function(state)
+        toggleMaleChildrenTransparency(state)
+    end
+})
+
+RemovalsSection:AddToggle({
+    text = "Leaves",
+    state = false,
+    tooltip = "Find and remove leaves from trees in the environment",
+    flag = "Remove_Leaves",
+    callback = function(state)
+        toggleLeaves(state)
+    end
+})
+
+RemovalsSection:AddToggle({
+    text = "Shadows",
+    state = false,
+    tooltip = "Reduces shadows by disabling global shadows and setting time to noon",
+    flag = "Less_Shadows",
+    callback = function(state)
+        toggleLessShadows(state)
+    end
+})
+
+RemovalsSection:AddToggle({
+    text = "Clouds",
+    state = false,
+    tooltip = "Checks Workspace > Terrain for clouds and removes them",
+    flag = "Remove_TerrainClouds",
+    callback = function(state)
+        toggleClouds(state)
+    end
+})
+
+RemovalsSection:AddToggle({
+    text = "Lighting Effects",
+    state = false,
+    tooltip = "Toggles all Sky, Atmosphere, Bloom, and other visual effects",
+    flag = "Remove_AllLighting",
+    callback = function(state)
+        toggleAllLighting(state)
     end
 })
 
