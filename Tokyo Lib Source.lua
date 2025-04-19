@@ -4599,11 +4599,13 @@ function library:init()
                 {self.cheatname, true},
                 {"Private", false},
                 {'0 fps', true},
-                {'0ms', true}
+                {'0ms', true},
+                {'00:00:00', true},
+                {'M, D, Y', true},
             };
             lock = 'custom';
             position = newUDim2(0,0,0,0);
-            refreshrate = 15;
+            refreshrate = 25;
         }
 
         function self.watermark:Update()
