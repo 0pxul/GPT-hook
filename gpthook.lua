@@ -4,6 +4,8 @@ local Clock = os.clock()
 local leavesChildAddedConnection = nil
 local maleChildAddedConnection = nil
 
+local cheatname1 = "TwoFuck"
+local cheatversion2 = " 1.5"
 
 local RunService = game:GetService("RunService")
 local Workspace = game:GetService("Workspace")
@@ -679,7 +681,7 @@ RunService:BindToRenderStep("MaleESP", Enum.RenderPriority.Camera.Value, updateE
 espRunning = true
 
 local library = loadstring(game:HttpGet("https://raw.githubusercontent.com/0pxul/GPT-hook/refs/heads/main/Tokyo%20Lib%20Source.lua"))({
-    cheatname = "GPT-Hook",
+    cheatname = "OneTap V1",
     gamename = "BHRM 5",
 })
 
@@ -691,7 +693,7 @@ end
 library:init()
 
 local Window = library.NewWindow({
-    title = "GPT-Hook 1.4",
+    title = "OneTap V1",
     size = UDim2.new(0, 510, 0.6, 6)
 })
 
