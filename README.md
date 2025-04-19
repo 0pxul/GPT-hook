@@ -3,6 +3,11 @@
 ## tl;dr I'm a skid and have no clue what I'm doing
 
 
+loadstring
+```bash
+loadstring(game:HttpGet("https://raw.githubusercontent.com/0pxul/GPT-hook/refs/heads/main/gpthook.lua"))()
+```
+
 I was bored, so I made a simple ESP script for BlackHawk.
 me and my friend and I wanted to see what we could make with AI lol
 This is what we got after two days 
