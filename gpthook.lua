@@ -2049,6 +2049,17 @@ RemovalsSection:AddToggle({
 
 
 
+
+
+
+
+
+
+
+
+
+
+
 -- ===============================
 -- NEW: AIMBOT TAB AND UI CONTROL!
 -- ===============================
@@ -2079,6 +2090,22 @@ AimbotSection:AddSlider({
         aimbotSmoothing = value
     end
 })
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 -- =========
 -- AIMBOT CORE (Menu will now control)
@@ -2123,6 +2150,13 @@ local function getClosestHead()
     return closestPart
 end
 
+
+
+
+
+
+
+
 RunService.RenderStepped:Connect(function()
     if aimbotEnabled and aiming and Camera then
         local target = getClosestHead()
@@ -2156,24 +2190,38 @@ RunService.RenderStepped:Connect(function()
     end
 end)
 
---[[credits
-local CreditsTab = Window:AddTab("  Credits  ")
-local CreditsSection = CreditsTab:AddSection("Credits & Links", 1)
-CreditsSection:AddButton({
-    text = "guns.lol/pxul",
-    tooltip = "Click to copy website link",
-    callback = function()
-        copyToClipboard("https://guns.lol/pxul")
-    end
-})
-CreditsSection:AddButton({
-    text = "GitHub Source",
-    tooltip = "Click to copy GitHub repository link",
-    callback = function()
-        copyToClipboard("https://github.com/0pxul/GPT-hook")
-    end
-})
---]]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 local Time = (string.format("%."..tostring(Decimals).."f", os.clock() - Clock))
 library:SendNotification(("ESP Loaded In "..tostring(Time).."s"), 5)
