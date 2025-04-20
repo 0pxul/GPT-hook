@@ -1,14 +1,8 @@
-
 -- ===============================
--- AIMBOT TAB AND UI CONTROL!
+-- NEW: AIMBOT TAB AND UI CONTROL!
 -- ===============================
 local aimbotEnabled = false
 local aimbotSmoothing = 0.2
-local aiming = false -- This is toggled by the keybind
-
-local TargetParentModelName = "Male"
-local TargetHeadPartName = "Head"
-local Camera = Workspace.CurrentCamera
 
 local AimbotTab = Window:AddTab("  Aimbot  ")
 local AimbotSection = AimbotTab:AddSection("Aimbot Controls", 1)
@@ -17,12 +11,11 @@ AimbotSection:AddToggle({
     text = "Enable Aimbot",
     state = aimbotEnabled,
     flag = "Aimbot_Enabled",
-    tooltip = "Enable/Disable the aimbot feature",
+    tooltip = "Hold right mouse to lock on to nearest head",
     callback = function(state)
         aimbotEnabled = state
     end
 })
-
 AimbotSection:AddSlider({
     text = "Smoothing",
     flag = "Aimbot_Smoothing",
@@ -36,38 +29,42 @@ AimbotSection:AddSlider({
     end
 })
 
--- Tokyo Lib Keybind for Aimbot Activation
-AimbotSection:AddBind({
-    enabled = true,
-    text = "Aimbot Keybind",
-    tooltip = "Hold or toggle this key to activate aimbot aiming",
-    mode = "hold", -- "hold" means aiming is true while key is held, "toggle" would flip on/off
-    bind = Enum.KeyCode.RightMouse, -- Default to right mouse button
-    flag = "Aimbot_Keybind",
-    state = false,
-    nomouse = false,
-    risky = false,
-    noindicator = false,
-    callback = function(isHeld)
-        aiming = isHeld
-    end,
-    keycallback = function(isHeld)
-        aiming = isHeld
-    end
-})
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 -- =========
 -- AIMBOT CORE (Menu will now control)
 -- =========
+local TargetParentModelName = "Male"
+local TargetHeadPartName = "Head"
+local UserInputService = game:GetService("UserInputService")
+local Workspace = game:GetService("Workspace")
+local Camera = Workspace.CurrentCamera
 
-local function hasBallSocketConstraint(model)
-    for _, desc in ipairs(model:GetDescendants()) do
-        if desc:IsA("BallSocketConstraint") then
-            return true
-        end
+local aiming = false
+UserInputService.InputBegan:Connect(function(input, processed)
+    if not processed and input.UserInputType == Enum.UserInputType.MouseButton2 then
+        aiming = true
     end
-    return false
-end
+end)
+UserInputService.InputEnded:Connect(function(input, processed)
+    if input.UserInputType == Enum.UserInputType.MouseButton2 then
+        aiming = false
+    end
+end)
 
 local function getClosestHead()
     local closestPart = nil
@@ -94,13 +91,20 @@ local function getClosestHead()
     return closestPart
 end
 
+
+
+
+
+
+
+
 RunService.RenderStepped:Connect(function()
     if aimbotEnabled and aiming and Camera then
         local target = getClosestHead()
         if target and typeof(target.Position) == "Vector3" then
             local screenPos, onScreen = Camera:WorldToViewportPoint(target.Position)
             if onScreen then
-                local mousePos = game:GetService("UserInputService"):GetMouseLocation()
+                local mousePos = UserInputService:GetMouseLocation()
                 local relX = screenPos.X - mousePos.X
                 local relY = screenPos.Y - mousePos.Y
                 local dist = math.sqrt(relX * relX + relY * relY)
