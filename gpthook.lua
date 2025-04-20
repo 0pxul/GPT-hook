@@ -2134,14 +2134,17 @@ local function getClosestHead()
     local screenCenter = Vector2.new(Camera.ViewportSize.X / 2, Camera.ViewportSize.Y / 2)
     for _, model in ipairs(Workspace:GetChildren()) do
         if model:IsA("Model") and model.Name == TargetParentModelName and model.Parent then
-            local head = model:FindFirstChild(TargetHeadPartName)
-            if head and head:IsA("BasePart") then
-                local screenPos, onScreen = Camera:WorldToViewportPoint(head.Position)
-                if onScreen then
-                    local dist = (Vector2.new(screenPos.X, screenPos.Y) - screenCenter).Magnitude
-                    if dist < closestDist then
-                        closestDist = dist
-                        closestPart = head
+            -- ALIVE CHECK: skip if model has BallSocketConstraint
+            if not hasBallSocketConstraint(model) then
+                local head = model:FindFirstChild(TargetHeadPartName)
+                if head and head:IsA("BasePart") then
+                    local screenPos, onScreen = Camera:WorldToViewportPoint(head.Position)
+                    if onScreen then
+                        local dist = (Vector2.new(screenPos.X, screenPos.Y) - screenCenter).Magnitude
+                        if dist < closestDist then
+                            closestDist = dist
+                            closestPart = head
+                        end
                     end
                 end
             end
